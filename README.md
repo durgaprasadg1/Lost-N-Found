@@ -460,7 +460,7 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -523,6 +523,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **[⬆ Back to top](#-lostfound-platform)**
 
-Made with ❤️ Durgaprasad
+Made with ❤️ by Durgaprasad
 
 </div>

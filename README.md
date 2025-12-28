@@ -273,6 +273,52 @@ npm run lint
 
 ---
 
+  
+    
+      
+        
+            
+    
+
+          HealthCare  HealthCare          Public
+        
+          
+            
+            
+              
+    
+
+            
+              
+    
+    
+
+  
+
+              
+    
+    
+
+  
+
+          
+      
+
+
+      
+        
+      
+
+      
+          
+  
+  JavaScript
+
+
+      
+    
+  
+
 ##  Admin Setup
 
 For detailed admin setup instructions, see [ADMIN_SETUP.md](./ADMIN_SETUP.md).

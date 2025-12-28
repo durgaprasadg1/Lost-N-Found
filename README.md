@@ -205,7 +205,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
 ### MongoDB Configuration
 
 ```env
-MONGODB_URI=mongodb://username:password@cluster.mongodb.net/lnf?retryWrites=true&w=majority
+MONGODB_URI=:YOUR_MONGO_DB_CONNECTION_STRING
 ```
 
 ### Firebase Admin Configuration

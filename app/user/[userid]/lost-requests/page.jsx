@@ -10,6 +10,14 @@ import StatBox from "../../../Components/Others/StatBox";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function MyLostRequests() {
   const { userid } = useParams();
@@ -19,6 +27,8 @@ export default function MyLostRequests() {
   const [loading, setLoading] = useState(true);
   const [resolvingItemId, setResolvingItemId] = useState(null);
   const [refreshTick, setRefreshTick] = useState(0);
+
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const loadLostRequests = useCallback(async () => {
     if (!user) return;
@@ -37,8 +47,7 @@ export default function MyLostRequests() {
 
       const data = await res.json();
       setItems(data.items || []);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to load lost requests");
       setItems([]);
     } finally {
@@ -52,58 +61,52 @@ export default function MyLostRequests() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setRefreshTick((prev) => prev + 1);
-    }, 15000); 
-
+      setRefreshTick((p) => p + 1);
+    }, 15000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleGotItem = async (itemId) => {
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    if (
-      !confirm(
-        "Have you received the item? Click OK to confirm and mark this request as resolved."
-      )
-    ) {
-      return;
-    }
-
+  const runAction = async () => {
+    const { itemId, type } = confirmAction;
     try {
       setResolvingItemId(itemId);
       const token = await user.getIdToken();
 
-      const res = await fetch(`/api/items/${itemId}/resolved`, {
+      const endpoint =
+        type === "resolved"
+          ? `/api/items/${itemId}/resolved`
+          : `/api/items/${itemId}/not-got-item`;
+
+      const res = await fetch(endpoint, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) {
-        toast.error("Failed to mark as resolved");
+        toast.error("Action failed");
         return;
       }
 
-      toast.success("Item marked as resolved");
+      toast.success(
+        type === "resolved"
+          ? "Marked as resolved"
+          : "Marked as still lost"
+      );
+
       refreshMongoUser();
-      setRefreshTick((prev) => prev + 1); 
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to mark item as resolved");
+      setRefreshTick((p) => p + 1);
+    } catch {
+      toast.error("Action failed");
     } finally {
       setResolvingItemId(null);
+      setConfirmAction(null);
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin h-8 w-8 text-gray-800" />
+        <Loader2 className="animate-spin h-8 w-8" />
       </div>
     );
   }
@@ -119,7 +122,7 @@ export default function MyLostRequests() {
     <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-semibold">My Lost Requests</h1>
       <p className="text-gray-600 mb-8">
-        View and manage your lost item requests
+        Track and manage your reported lost items
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
@@ -139,7 +142,7 @@ export default function MyLostRequests() {
             No lost requests yet
           </h2>
           <p className="text-gray-500 mt-1">
-            You haven&apos;t reported any lost items
+            Start by reporting a lost item
           </p>
 
           <Link
@@ -168,7 +171,7 @@ export default function MyLostRequests() {
 
               <div className="flex-1">
                 <h3 className="text-lg font-semibold">{item.itemName}</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   Lost at: {item.lostAt || "N/A"}
                 </p>
 
@@ -188,31 +191,46 @@ export default function MyLostRequests() {
                     : "Pending"}
                 </span>
 
-                <button
-                  onClick={() => handleGotItem(item._id)}
-                  disabled={
-                    !item.isFound ||
-                    item.isResolved ||
-                    resolvingItemId === item._id
-                  }
-                  className="mt-3 bg-green-600 text-white px-3 py-1 rounded
-                             hover:bg-green-700
-                             disabled:opacity-50
-                             disabled:cursor-not-allowed
-                             flex items-center gap-2"
-                >
-                  {resolvingItemId === item._id ? (
-                    <>
+                <div className="mt-4 flex gap-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!item.isFound || item.isResolved || resolvingItemId === item._id}
+                    onClick={() =>
+                      setConfirmAction({
+                        itemId: item._id,
+                        type: "not-got",
+                      })
+                    }
+                  >
+                    Still Not Received
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    className="bg-green-600 text-white"
+                    disabled={
+                      !item.isFound ||
+                      item.isResolved ||
+                      resolvingItemId === item._id
+                    }
+                    onClick={() =>
+                      setConfirmAction({
+                        itemId: item._id,
+                        type: "resolved",
+                      })
+                    }
+                  >
+                    {resolvingItemId === item._id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Got Item"
-                  )}
-                </button>
+                    ) : (
+                      "Mark as Resolved"
+                    )}
+                  </Button>
+                </div>
 
                 {!item.isFound && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-2">
                     Waiting for someone to mark this item as found
                   </p>
                 )}
@@ -221,6 +239,27 @@ export default function MyLostRequests() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Action</DialogTitle>
+          </DialogHeader>
+
+          <p className="text-sm text-gray-600">
+            {confirmAction?.type === "resolved"
+              ? "Confirm that you have received this item."
+              : "Confirm that you have not received this item yet."}
+          </p>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmAction(null)}>
+              Cancel
+            </Button>
+            <Button onClick={runAction}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

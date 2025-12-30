@@ -43,13 +43,11 @@ export async function PATCH(req, { params }) {
       );
     }
 
-    // find the finder (if recorded)
     let finder = null;
     if (item.foundBy) {
       finder = await User.findById(item.foundBy);
     }
 
-    // notify finder (if available) that owner confirmed resolution
     if (finder) {
       const msgToFinder = `Your report for "${
         item.itemName
@@ -59,11 +57,9 @@ export async function PATCH(req, { params }) {
       finder.notification.push(msgToFinder);
       await finder.save();
 
-      // credit the finder for a successful return
       await User.findByIdAndUpdate(finder._id, { $inc: { itemsReturned: 1 } });
     }
 
-    // credit the owner for resolving a lost request
     await User.findByIdAndUpdate(owner._id, { $inc: { totalLostRequests: 1 } });
 
     item.isResolved = true;

@@ -56,10 +56,24 @@ export async function PATCH(req, { params }) {
     item.isFound = true;
     item.foundBy = founder._id;
     item.foundAt = new Date().toLocaleString();
+
+    // credit the finder when they mark an item as found (only once)
+    try {
+      if (!item.creditGiven) {
+        await User.findByIdAndUpdate(founder._id, {
+          $inc: { itemsReturned: 1 },
+        });
+        item.creditGiven = true;
+      }
+    } catch (err) {
+      console.error("Error crediting finder on found route:", err);
+    }
+
     await item.save();
 
     return NextResponse.json({ success: true, owner, item }, { status: 200 });
-  } catch {
+  } catch (err) {
+    console.error("/api/items/[itemid]/found error:", err);
     return NextResponse.json(
       { success: false, error: "Internal Server Error" },
       { status: 500 }

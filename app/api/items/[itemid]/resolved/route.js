@@ -57,7 +57,17 @@ export async function PATCH(req, { params }) {
       finder.notification.push(msgToFinder);
       await finder.save();
 
-      await User.findByIdAndUpdate(finder._id, { $inc: { itemsReturned: 1 } });
+      // Credit the finder if they haven't been credited yet
+      try {
+        if (!item.creditGiven) {
+          await User.findByIdAndUpdate(finder._id, {
+            $inc: { itemsReturned: 1 },
+          });
+          item.creditGiven = true;
+        }
+      } catch (err) {
+        console.error("Error crediting finder on resolved route:", err);
+      }
     }
 
     await User.findByIdAndUpdate(owner._id, { $inc: { totalLostRequests: 1 } });

@@ -90,7 +90,12 @@ export default function AllLostRequests() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok)  toast.error("Something went wrong");
+      if (!res.ok) {
+        console.error("mark found failed:", data);
+        toast.error("Something went wrong");
+        return;
+      }
+
       toast.success("Item marked as found");
       refreshMongoUser();
       setRefreshTick((p) => p + 1);
@@ -119,7 +124,10 @@ export default function AllLostRequests() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!confirmItemId} onOpenChange={() => setConfirmItemId(null)}>
+      <Dialog
+        open={!!confirmItemId}
+        onOpenChange={() => setConfirmItemId(null)}
+      >
         <DialogContent>
           <DialogTitle>Confirm Action</DialogTitle>
           <p className="text-sm">
@@ -151,73 +159,103 @@ export default function AllLostRequests() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-6 py-8 grid md:grid-cols-3 sm:grid-cols-2 gap-8">
-        {visibleItems.map((item) => (
-          <motion.div key={item._id} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardContent className="p-4">
-                <div className="h-52 bg-gray-100 rounded mb-4 overflow-hidden">
-                  <Image
-                    src={item.itemImage?.url || "/placeholder.png"}
-                    alt={item.itemName}
-                    width={400}
-                    height={400}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-
-                <h2 className="text-xl font-semibold">{item.itemName}</h2>
-                <Badge className="mt-1">{item.category}</Badge>
-
-                <p className="text-gray-600 text-sm mt-3 line-clamp-3">
-                  {item.description}
-                </p>
-
-                <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                  {user && mongoUser && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="w-full sm:w-1/2 bg-stone-900 text-white">
-                          Contact Owner
-                        </Button>
-                      </DialogTrigger>
-
-                      <DialogContent>
-                        <DialogTitle>{item.postedBy?.name}</DialogTitle>
-                        <p className="text-sm">Phone: {item.postedBy?.phone}</p>
-                        <p className="text-sm">Email: {item.postedBy?.email}</p>
-
-                        <div className="h-52 bg-gray-100 rounded mt-4 overflow-hidden">
-                          <Image
-                            src={item.postedBy?.profilePicture?.url || "/placeholder.png"}
-                            alt="Owner"
-                            width={400}
-                            height={400}
-                            className="object-cover w-full h-full"
-                          />
-                        </div>
-
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-
-                  <Button
-                    className="w-full sm:w-1/2 bg-green-600 text-white"
-                    disabled={markingFoundId === item._id}
-                    onClick={() => handleMarkFound(item._id)}
-                  >
-                    {markingFoundId === item._id ? "Processing..." : "Mark Found"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {!loading && visibleItems.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-20 border rounded-xl bg-white"
+          >
+            <h2 className="text-lg font-medium text-gray-700">
+              No lost requests yet
+            </h2>
+            <p className="text-gray-500 mt-1">
+              Start by reporting a lost item or check back later.
+            </p>
           </motion.div>
-        ))}
+        ) : (
+          <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-8">
+            {visibleItems.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="h-52 bg-gray-100 rounded mb-4 overflow-hidden">
+                      <Image
+                        src={item.itemImage?.url || "/placeholder.png"}
+                        alt={item.itemName}
+                        width={400}
+                        height={400}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+
+                    <h2 className="text-xl font-semibold">{item.itemName}</h2>
+                    <Badge className="mt-1">{item.category}</Badge>
+
+                    <p className="text-gray-600 text-sm mt-3 line-clamp-3">
+                      {item.description}
+                    </p>
+
+                    <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                      {user && mongoUser && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="w-full sm:w-1/2 bg-stone-900 text-white">
+                              Contact Owner
+                            </Button>
+                          </DialogTrigger>
+
+                          <DialogContent>
+                            <DialogTitle>{item.postedBy?.name}</DialogTitle>
+                            <p className="text-sm">
+                              Phone: {item.postedBy?.phone}
+                            </p>
+                            <p className="text-sm">
+                              Email: {item.postedBy?.email}
+                            </p>
+
+                            <div className="h-52 bg-gray-100 rounded mt-4 overflow-hidden">
+                              <Image
+                                src={
+                                  item.postedBy?.profilePicture?.url ||
+                                  "/placeholder.png"
+                                }
+                                alt="Owner"
+                                width={400}
+                                height={400}
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+
+                            <DialogFooter>
+                              <DialogClose asChild>
+                                <Button variant="outline">Close</Button>
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+
+                      <Button
+                        className="w-full sm:w-1/2 bg-green-600 text-white"
+                        disabled={markingFoundId === item._id}
+                        onClick={() => handleMarkFound(item._id)}
+                      >
+                        {markingFoundId === item._id
+                          ? "Processing..."
+                          : "Mark Found"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

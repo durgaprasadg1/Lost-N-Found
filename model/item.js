@@ -60,7 +60,6 @@ const itemSchema = new Schema(
       required: true,
     },
 
-    // user who marked this item as found (if any)
     foundBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -76,6 +75,10 @@ const itemSchema = new Schema(
     },
 
     isResolved: {
+      type: Boolean,
+      default: false,
+    },
+    creditGiven: {
       type: Boolean,
       default: false,
     },

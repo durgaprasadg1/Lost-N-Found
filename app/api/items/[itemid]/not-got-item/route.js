@@ -59,15 +59,25 @@ export async function PATCH(req, { params }) {
       const finder = await User.findById(item.foundBy);
 
       if (finder) {
-        const msgToFinder = `Your report for "${item.itemName}" was confirmed as NOT received by ${ownerUser.name}. Email: ${ownerUser.email}. Time: ${new Date().toLocaleString()}`;
+        const msgToFinder = `Your report for "${
+          item.itemName
+        }" was confirmed as NOT received by ${ownerUser.name}. Email: ${
+          ownerUser.email
+        }. Time: ${new Date().toLocaleString()}`;
 
         finder.notification.push(msgToFinder);
         await finder.save();
 
-        if (finder.itemsReturned > 0) {
-          await User.findByIdAndUpdate(finder._id, {
-            $inc: { itemsReturned: -1 },
-          });
+        // If we previously credited the finder for this item, revoke that credit
+        try {
+          if (item.creditGiven) {
+            await User.findByIdAndUpdate(finder._id, {
+              $inc: { itemsReturned: -1 },
+            });
+            item.creditGiven = false;
+          }
+        } catch (err) {
+          console.error("Error revoking finder credit on not-got-item:", err);
         }
       }
     }
@@ -82,11 +92,9 @@ export async function PATCH(req, { params }) {
     item.foundBy = null;
     await item.save();
 
-    return NextResponse.json(
-      { success: true, item },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, item }, { status: 200 });
   } catch (err) {
+    console.error("/api/items/[itemid]/not-got-item error:", err);
     return NextResponse.json(
       { success: false, error: err.message || "Internal Server Error" },
       { status: 500 }

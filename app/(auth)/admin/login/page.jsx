@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,13 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      const admin = localStorage.getItem("adminSession");
+      if (admin) router.push("/admin");
+    } catch (e) {}
+  }, []);
 
   async function handleAdminLogin(e) {
     e.preventDefault();

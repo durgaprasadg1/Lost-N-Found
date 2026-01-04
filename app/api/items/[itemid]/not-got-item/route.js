@@ -3,6 +3,15 @@ import Item from "@/model/item";
 import User from "@/model/user";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
 
 export async function PATCH(req, { params }) {
   try {
@@ -23,7 +32,7 @@ export async function PATCH(req, { params }) {
     let decoded;
     try {
       decoded = await adminAuth.verifyIdToken(token);
-    } catch (err) {
+    } catch {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
@@ -59,25 +68,53 @@ export async function PATCH(req, { params }) {
       const finder = await User.findById(item.foundBy);
 
       if (finder) {
-        const msgToFinder = `Your report for "${
+        const notificationMessage = `The owner has confirmed that the item "${
           item.itemName
-        }" was confirmed as NOT received by ${ownerUser.name}. Email: ${
+        }" was not received. Reported by ${ownerUser.name}. Email: ${
           ownerUser.email
-        }. Time: ${new Date().toLocaleString()}`;
+        } | Time: ${new Date().toLocaleString()}`;
 
-        finder.notification.push(msgToFinder);
+        finder.notification.push(notificationMessage);
         await finder.save();
 
-        // If we previously credited the finder for this item, revoke that credit
-        try {
-          if (item.creditGiven) {
+        if (item.creditGiven) {
+          try {
             await User.findByIdAndUpdate(finder._id, {
               $inc: { itemsReturned: -1 },
             });
             item.creditGiven = false;
+          } catch (err) {
+            console.error("Error revoking finder credit:", err);
           }
-        } catch (err) {
-          console.error("Error revoking finder credit on not-got-item:", err);
+        }
+
+        if (finder.email) {
+          const mailOptions = {
+            from: `"VIT Lost & Found" <${process.env.MAIL_USER}>`,
+            to: finder.email,
+            subject: "Update Regarding Reported Found Item",
+            text: `Dear ${finder.name},
+
+This is to inform you that the owner of the item "${item.itemName}" has confirmed that the item was not received.
+
+Owner Details:
+Name: ${ownerUser.name}
+Email: ${ownerUser.email}
+Phone: ${ownerUser.phone}
+
+If there has been any misunderstanding or if further clarification is required, you may contact the owner directly.
+
+Thank you for your cooperation and for contributing to the VIT Lost & Found initiative.
+
+Warm regards,
+VIT Lost & Found Team`,
+          };
+
+          try {
+            await transporter.sendMail(mailOptions);
+          } catch (e) {
+            console.error("Email send failed:", e.message);
+          }
         }
       }
     }
@@ -96,7 +133,7 @@ export async function PATCH(req, { params }) {
   } catch (err) {
     console.error("/api/items/[itemid]/not-got-item error:", err);
     return NextResponse.json(
-      { success: false, error: err.message || "Internal Server Error" },
+      { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
   }

@@ -55,7 +55,7 @@ export default function AllLostRequests() {
   }, []);
 
   const visibleBase = useMemo(
-    () => lostItems.filter((i) => i.isVerified && !i.isResolved),
+    () => lostItems.filter((i) => i.isVerified && !i.isResolved && !i.isFound ),
     [lostItems]
   );
 
@@ -74,7 +74,7 @@ export default function AllLostRequests() {
       toast.error("You must be logged in");
       return;
     }
-    if (!mongoUser?.phone?.trim()) {
+    if (mongoUser?.phone == null || mongoUser?.phone === "") {
       setShowProfileDialog(true);
       return;
     }
@@ -176,6 +176,7 @@ export default function AllLostRequests() {
         ) : (
           <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-8">
             {visibleItems.map((item) => (
+              
               <motion.div
                 key={item._id}
                 initial={{ opacity: 0, y: 30 }}

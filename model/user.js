@@ -73,6 +73,29 @@ const userSchema = new Schema(
       default: 0,
     },
 
+    monthlyLostRequestsCount: {
+      type: Number,
+      default: 0,
+    },
+    monthlyFoundAnnouncementsCount: {
+      type: Number,
+      default: 0,
+    },
+    lastMonthlyReset: {
+      type: Date,
+      default: () => new Date(),
+    },
+
+    // Daily mark-as-found limit
+    dailyMarkFoundCount: {
+      type: Number,
+      default: 0,
+    },
+    lastDailyReset: {
+      type: Date,
+      default: () => new Date(),
+    },
+
     bio: {
       type: String,
       trim: true,

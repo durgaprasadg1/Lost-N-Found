@@ -91,8 +91,8 @@ export default function AllLostRequests() {
       });
       const data = await res.json();
       if (!res.ok) {
-        console.error("mark found failed:", data);
-        toast.error("Something went wrong");
+        console.log("mark found failed:", data);
+        toast.error(data.error);
         return;
       }
 

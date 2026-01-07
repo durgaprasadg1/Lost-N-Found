@@ -12,7 +12,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import LostFoundButtons from "@/app/Components/Others/LostFoundButtons";
-// import item from "@/model/item";
 
 export default function AllFoundAnnouncements() {
   const [foundItems, setFoundItems] = useState([]);
@@ -38,7 +37,7 @@ export default function AllFoundAnnouncements() {
   }, []);
 
   const visibleBase = useMemo(
-    () => foundItems.filter((i) => i.isVerified && !i.isResolved && !i.isLost),
+    () => foundItems.filter((i) => i.isVerified && !i.isResolved &&   !i.isLost),
     [foundItems]
   );
 

@@ -5,6 +5,11 @@ import cloudinary from "@/lib/cloudinary";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
 import { foundItemSchema } from "@/lib/validationSchemas";
+import {
+  shouldResetMonthlyLimits,
+  resetMonthlyLimits,
+  canPostFoundAnnouncement,
+} from "@/lib/limitHelpers";
 
 export async function POST(req, { params }) {
   try {
@@ -32,6 +37,17 @@ export async function POST(req, { params }) {
 
     if (mongoUser.email !== decoded.email) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Check and reset monthly limits if needed
+    if (shouldResetMonthlyLimits(mongoUser)) {
+      await resetMonthlyLimits(mongoUser);
+    }
+
+    // Check if user can post a found announcement
+    const canPost = canPostFoundAnnouncement(mongoUser);
+    if (!canPost.allowed) {
+      return NextResponse.json({ error: canPost.message }, { status: 429 });
     }
 
     const validationResult = foundItemSchema.safeParse(body);
@@ -88,7 +104,7 @@ export async function POST(req, { params }) {
     });
 
     await User.findByIdAndUpdate(userid, {
-      $inc: { itemsReturned: 1 },
+      $inc: { itemsReturned: 1, monthlyFoundAnnouncementsCount: 1 },
       phone: body.phone,
     });
 

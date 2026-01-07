@@ -4,20 +4,25 @@ import User from "@/model/user";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import {
+  shouldResetDailyLimit,
+  resetDailyLimit,
+  canMarkItemAsFound,
+} from "@/lib/limitHelpers";
 
 const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS,
-        },
-      });
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
 
 export async function PATCH(req, { params }) {
   try {
     await dbConnect();
 
-    const { itemid } =  await params;
+    const { itemid } = await params;
 
     const token = req.headers.get("Authorization")?.split("Bearer ")[1];
     if (!token) {
@@ -37,6 +42,17 @@ export async function PATCH(req, { params }) {
         { error: "Founder user not found" },
         { status: 404 }
       );
+    }
+
+    // Check and reset daily limit if needed
+    if (shouldResetDailyLimit(founder)) {
+      await resetDailyLimit(founder);
+    }
+
+    // Check if user can mark an item as found
+    const canMark = canMarkItemAsFound(founder);
+    if (!canMark.allowed) {
+      return NextResponse.json({ error: canMark.message }, { status: 429 });
     }
 
     const item = await Item.findById(itemid);
@@ -65,14 +81,13 @@ export async function PATCH(req, { params }) {
     item.foundAt = new Date().toLocaleString();
 
     if (!item.creditGiven) {
-      await User.findByIdAndUpdate(founder._id, { $inc: { itemsReturned: 1 } });
+      await User.findByIdAndUpdate(founder._id, {
+        $inc: { itemsReturned: 1, dailyMarkFoundCount: 1 },
+      });
       item.creditGiven = true;
     }
 
     if (owner.email) {
-      
-      
-
       const mailOptions = {
         from: `"VIT Lost & Found" `,
         to: owner.email,

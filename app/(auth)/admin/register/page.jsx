@@ -1,133 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "react-toastify";
-import Navbar from "@/app/Components/NonUser/Navbar";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { useEffect } from "react";
 
-export default function AdminRegisterPage() {
-  const router = useRouter();
-
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    secret: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  async function handleAdminSignup(e) {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/admin/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data?.error || "Admin creation failed");
-        return;
-      }
-
-      toast.success("Admin created successfully");
-      router.push("/admin/login");
-    } catch {
-      toast.error("Server error while creating admin");
-    } finally {
-      setLoading(false);
-    }
-  }
+export default function AdminRegisterInfo() {
+  useEffect(() => {
+    // Prevent accidental access
+    console.log("Admin registration is only available via API");
+  }, []);
 
   return (
-    <>
-      {" "}
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center px-4 bg-white">
-        <div className="w-full max-w-md bg-white p-8 rounded-xl shadow border">
-          <h1 className="text-2xl font-bold text-center text-slate -800 mb-2">
-            Admin Registration
-          </h1>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+      <div className="w-full max-w-2xl bg-white p-8 rounded-xl shadow border">
+        <h1 className="text-3xl font-bold text-center text-slate-800 mb-4">
+          Admin Registration
+        </h1>
 
-          <p className="text-xs text-center text-gray-600 mb-6">
-            Requires admin secret
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-yellow-800">
+            ⚠️ Admin registration is only available via API for security
+            reasons.
           </p>
+        </div>
 
-          <form onSubmit={handleAdminSignup} className="space-y-4">
-            <Input
-              placeholder="Admin name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">API Endpoint</h2>
+            <code className="block bg-gray-100 p-3 rounded text-sm">
+              POST /api/admin/register
+            </code>
+          </div>
 
-            <Input
-              type="email"
-              placeholder="Admin email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Request Body</h2>
+            <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
+              {`{
+  "name": "Admin Name",
+  "email": "admin@example.com",
+  "password": "SecurePassword123"
+}`}
+            </pre>
+          </div>
 
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password (min 8 chars)"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
-              >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible size={18} />
-                ) : (
-                  <AiOutlineEye size={18} />
-                )}
-              </button>
-            </div>
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              Using Postman / Thunder Client / Hoppscotch
+            </h2>
+            <ol className="list-decimal list-inside space-y-2 text-gray-700">
+              <li>Set method to POST</li>
+              <li>
+                Enter URL:{" "}
+                <code className="bg-gray-100 px-2 py-1 rounded text-sm">
+                  {typeof window !== "undefined" ? window.location.origin : ""}
+                  /api/admin/register
+                </code>
+              </li>
+              <li>Set Content-Type header to application/json</li>
+              <li>Add the JSON body with name, email, and password</li>
+              <li>Send the request</li>
+            </ol>
+          </div>
 
-            <div className="relative">
-              <Input
-                type={showSecret ? "text" : "password"}
-                placeholder="Admin secret"
-                value={form.secret}
-                onChange={(e) => setForm({ ...form, secret: e.target.value })}
-              />
-              <button
-                type="button"
-                aria-label={showSecret ? "Hide secret" : "Show secret"}
-                onClick={() => setShowSecret((s) => !s)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
-              >
-                {showSecret ? (
-                  <AiOutlineEyeInvisible size={18} />
-                ) : (
-                  <AiOutlineEye size={18} />
-                )}
-              </button>
-            </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+            <h3 className="font-semibold text-blue-900 mb-2">Note:</h3>
+            <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
+              <li>Email must be unique across both admins and users</li>
+              <li>Password must be at least 8 characters</li>
+              <li>
+                After registration, use the unified login page at{" "}
+                <a href="/login" className="underline">
+                  /login
+                </a>
+              </li>
+              <li>Admin secret is no longer required</li>
+            </ul>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-slate-800 text-white hover:bg-slate-950"
+          <div className="text-center mt-6">
+            <a
+              href="/login"
+              className="text-blue-600 hover:underline font-medium"
             >
-              {loading ? "Creating Admin..." : "Create Admin"}
-            </Button>
-          </form>
+              Go to Login Page →
+            </a>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

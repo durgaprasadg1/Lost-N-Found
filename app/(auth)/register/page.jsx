@@ -22,7 +22,17 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user && mongoUser) router.push("/");
+    // Check if admin is logged in
+    const adminSession = localStorage.getItem("adminSession");
+    if (adminSession) {
+      router.replace("/admin");
+      return;
+    }
+
+    // Check if user is logged in
+    if (user && mongoUser) {
+      router.replace("/user/" + mongoUser._id);
+    }
   }, [user, mongoUser, router]);
 
   async function handleSignup(e) {
@@ -127,12 +137,6 @@ export default function SignupPage() {
             Already have an account?{" "}
             <a href="/login" className="text-blue-600 hover:underline">
               Login
-            </a>
-          </p>
-
-          <p className="mt-2 text-sm text-center">
-            <a href="/admin/register" className="text-red-600">
-              Admin Registration →
             </a>
           </p>
         </div>

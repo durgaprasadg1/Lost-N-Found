@@ -47,8 +47,16 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
+    // Check if admin is logged in
+    const adminSession = localStorage.getItem("adminSession");
+    if (adminSession) {
+      router.replace("/admin");
+      return;
+    }
+
+    // Check if user is logged in
     if (user && mongoUser) {
-      router.push("/");
+      router.replace("/user/" + mongoUser._id);
     }
   }, [user, mongoUser, router]);
 
@@ -58,7 +66,7 @@ export default function LoginPage() {
 
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md p-8 border rounded-xl shadow">
-          <h1 className="text-3xl font-bold mb-6 text-center">User Login</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <Input
@@ -125,12 +133,6 @@ export default function LoginPage() {
             New user?{" "}
             <a href="/register" className="text-blue-600">
               Create an account
-            </a>
-          </p>
-
-          <p className="mt-3 text-center text-sm">
-            <a href="/admin/login" className="text-red-600">
-              Admin Login →
             </a>
           </p>
         </div>

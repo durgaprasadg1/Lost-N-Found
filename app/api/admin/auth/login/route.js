@@ -6,21 +6,7 @@ import bcrypt from "bcryptjs";
 export async function POST(req) {
   try {
     await dbConnect();
-    const { email, password, secret } = await req.json();
-
-    if (!process.env.ADMIN_CREATION_SECRET) {
-      return NextResponse.json(
-        { error: "Server not configured" },
-        { status: 500 }
-      );
-    }
-
-    if (!secret || secret !== process.env.ADMIN_CREATION_SECRET) {
-      return NextResponse.json(
-        { error: "Invalid admin secret" },
-        { status: 401 }
-      );
-    }
+    const { email, password } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(

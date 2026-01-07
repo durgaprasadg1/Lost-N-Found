@@ -1,26 +1,13 @@
 import dbConnect from "@/lib/dbConnect";
 import Admin from "@/model/admin";
+import User from "@/model/user";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
   try {
     await dbConnect();
-    const { name, email, password, secret } = await req.json();
-
-    if (!process.env.ADMIN_CREATION_SECRET) {
-      return NextResponse.json(
-        { error: "Server not configured" },
-        { status: 500 }
-      );
-    }
-
-    if (!secret || secret !== process.env.ADMIN_CREATION_SECRET) {
-      return NextResponse.json(
-        { error: "Invalid admin secret" },
-        { status: 401 }
-      );
-    }
+    const { name, email, password } = await req.json();
 
     if (!name || name.length < 2) {
       return NextResponse.json(
@@ -43,10 +30,23 @@ export async function POST(req) {
       );
     }
 
+    // Check if email already exists in Admin collection
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return NextResponse.json(
-        { error: "Admin already exists" },
+        { error: "Email already registered as admin" },
+        { status: 409 }
+      );
+    }
+
+    // Check if email already exists in User collection
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return NextResponse.json(
+        {
+          error:
+            "Email already registered as user. Use a different email for admin.",
+        },
         { status: 409 }
       );
     }
@@ -61,6 +61,7 @@ export async function POST(req) {
 
     return NextResponse.json({
       success: true,
+      message: "Admin created successfully",
       admin: { id: admin._id, name: admin.name, email: admin.email },
     });
   } catch (error) {

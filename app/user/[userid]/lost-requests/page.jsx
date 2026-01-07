@@ -127,7 +127,7 @@ export default function MyLostRequests() {
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <StatBox label="Total" value={total} color="bg-stone-100" />
-        <StatBox label="Pending" value={pending} color="bg-yellow-50" />
+        <StatBox label="Pending ( Not Resolved )" value={pending} color="bg-yellow-50" />
         <StatBox label="Found" value={found} color="bg-blue-50" />
         <StatBox label="Resolved" value={resolved} color="bg-green-50" />
       </div>

@@ -5,6 +5,25 @@ import { getAuthErrorMessage } from "@/lib/authErrors";
 
 export async function login(email, password) {
   try {
+    // First, check if this is an admin login (admins use different auth)
+    const adminCheckRes = await fetch("/api/admin/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (adminCheckRes.ok) {
+      const adminData = await adminCheckRes.json();
+      // Store admin session
+      localStorage.setItem("adminSession", JSON.stringify(adminData.admin));
+      toast.success("Admin logged in successfully");
+
+      // Redirect to admin page
+      window.location.href = "/admin";
+      return adminData;
+    }
+
+    // If not admin, proceed with regular Firebase user login
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const token = await cred.user.getIdToken();
 
@@ -19,12 +38,17 @@ export async function login(email, password) {
       await signOut(auth);
       toast.error("Account not registered. Please register before logging in.");
       console.log(data?.error || "User not registered");
+      return;
     }
 
     toast.success("Logged in successfully");
+    // Redirect to home page for regular users
+    window.location.href = "/";
     return data;
   } catch (err) {
     const errorMessage = getAuthErrorMessage(err);
-    console.log("Signin error", errorMessage)
+    toast.error(errorMessage || "Login failed");
+    console.log("Signin error", errorMessage);
+    throw err;
   }
 }

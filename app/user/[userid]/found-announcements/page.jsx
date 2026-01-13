@@ -6,14 +6,23 @@ import UnauthorizedBox from "../../../Components/Others/UnAuthorised";
 import StatBox from "../../../Components/Others/StatBox";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { Loader2 } from "lucide-react";
 
 export default function MyFoundAnnouncements({ params }) {
   const { userid } = useParams();
-  const { user } = useAuth();
+  const { user, mongoUser } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!mongoUser || !userid) return;
+
+    if (mongoUser._id !== userid) {
+      router.push("/");
+    }
+  }, [mongoUser, userid, router]);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

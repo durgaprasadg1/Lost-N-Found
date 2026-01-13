@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import imageCompression from "browser-image-compression";
 import { toast } from "react-toastify";
@@ -20,6 +20,16 @@ import { Loader2 } from "lucide-react";
 export default function NewLostRequest() {
   const { user, mongoUser } = useAuth();
   const router = useRouter();
+  const { userid } = useParams();
+
+  useEffect(() => {
+    if (!mongoUser || !userid) return;
+
+    if (mongoUser._id !== userid) {
+      router.push("/");
+    }
+  }, [mongoUser, userid, router]);
+
   const [form, setForm] = useState({
     itemName: "",
     description: "",

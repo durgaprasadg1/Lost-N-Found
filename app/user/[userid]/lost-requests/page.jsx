@@ -21,7 +21,8 @@ import {
 
 export default function MyLostRequests() {
   const { userid } = useParams();
-  const { user, refreshMongoUser } = useAuth();
+  const { user, mongoUser, refreshMongoUser } = useAuth();
+  const router = useRouter();
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,14 @@ export default function MyLostRequests() {
   const [refreshTick, setRefreshTick] = useState(0);
 
   const [confirmAction, setConfirmAction] = useState(null);
+
+  useEffect(() => {
+    if (!mongoUser || !userid) return;
+
+    if (mongoUser._id !== userid) {
+      router.push("/");
+    }
+  }, [mongoUser, userid, router]);
 
   const loadLostRequests = useCallback(async () => {
     if (!user) return;
@@ -88,9 +97,7 @@ export default function MyLostRequests() {
       }
 
       toast.success(
-        type === "resolved"
-          ? "Marked as resolved"
-          : "Marked as still lost"
+        type === "resolved" ? "Marked as resolved" : "Marked as still lost"
       );
 
       refreshMongoUser();
@@ -127,7 +134,11 @@ export default function MyLostRequests() {
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <StatBox label="Total" value={total} color="bg-stone-100" />
-        <StatBox label="Pending ( Not Resolved )" value={pending} color="bg-yellow-50" />
+        <StatBox
+          label="Pending ( Not Resolved )"
+          value={pending}
+          color="bg-yellow-50"
+        />
         <StatBox label="Found" value={found} color="bg-blue-50" />
         <StatBox label="Resolved" value={resolved} color="bg-green-50" />
       </div>
@@ -141,9 +152,7 @@ export default function MyLostRequests() {
           <h2 className="text-lg font-medium text-gray-700">
             No lost requests yet
           </h2>
-          <p className="text-gray-500 mt-1">
-            Start by reporting a lost item
-          </p>
+          <p className="text-gray-500 mt-1">Start by reporting a lost item</p>
 
           <Link
             href={`/user/${userid}/new-lost-request`}
@@ -195,7 +204,11 @@ export default function MyLostRequests() {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={!item.isFound || item.isResolved || resolvingItemId === item._id}
+                    disabled={
+                      !item.isFound ||
+                      item.isResolved ||
+                      resolvingItemId === item._id
+                    }
                     onClick={() =>
                       setConfirmAction({
                         itemId: item._id,
@@ -240,7 +253,10 @@ export default function MyLostRequests() {
         </div>
       )}
 
-      <Dialog open={!!confirmAction} onOpenChange={() => setConfirmAction(null)}>
+      <Dialog
+        open={!!confirmAction}
+        onOpenChange={() => setConfirmAction(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Action</DialogTitle>

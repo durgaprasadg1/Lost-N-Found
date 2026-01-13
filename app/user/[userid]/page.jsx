@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import EditProfileModal from "../../Components/User/EditProfileModal";
 import { motion } from "framer-motion";
@@ -12,7 +13,18 @@ import { Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, mongoUser, refreshMongoUser } = useAuth();
+  const { userid } = useParams();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  // Authorization check: prevent users from accessing other users' profiles
+  useEffect(() => {
+    if (!mongoUser || !userid) return;
+
+    if (mongoUser._id !== userid) {
+      router.push("/");
+    }
+  }, [mongoUser, userid, router]);
 
   useEffect(() => {
     if (!user) return;

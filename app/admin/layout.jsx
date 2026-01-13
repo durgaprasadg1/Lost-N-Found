@@ -19,21 +19,36 @@ import AdminSidebar from "./../Components/Admins/Others/AdminSideBar";
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
-  const { admin } = useAuth();
+  const { admin, user, loading } = useAuth();
   const [open, setOpen] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(null);
 
   async function handleLogout() {
     localStorage.removeItem("adminSession");
     router.push("/login");
   }
 
-  // Redirect unauthorized users away from admin pages
   useEffect(() => {
     const adminSession = localStorage.getItem("adminSession");
+
     if (!adminSession) {
-      router.push("/login");
+      setIsAuthorized(false);
+      router.push("/");
+      return;
     }
-  }, [router]);
+
+    if (user) {
+      setIsAuthorized(false);
+      router.push("/");
+      return;
+    }
+
+    setIsAuthorized(true);
+  }, [user, admin, router]);
+
+  if (isAuthorized === null || isAuthorized === false) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-600">

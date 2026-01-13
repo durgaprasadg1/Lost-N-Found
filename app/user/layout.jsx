@@ -8,6 +8,7 @@ import AccountBlockedBox from "../Components/Others/AccountBlockedBox";
 export default function UserLayout({ children }) {
   const { user, admin, mongoUser, loading } = useAuth();
   const router = useRouter();
+
   if (!loading && mongoUser?.isBlocked) {
     return <AccountBlockedBox />;
   }
@@ -16,11 +17,14 @@ export default function UserLayout({ children }) {
     if (loading) return;
 
     const adminSession = localStorage.getItem("adminSession");
+
+    // If admin is logged in, redirect to admin dashboard
     if (adminSession) {
       router.push("/admin");
       return;
     }
 
+    // If no user is logged in, redirect to login
     if (!user) {
       router.push("/login");
       return;

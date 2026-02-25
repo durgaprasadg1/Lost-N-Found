@@ -12,7 +12,6 @@ export function AuthProvider({ children }) {
   const [admin, setAdmin] = useState(null);
 
   useEffect(() => {
-    // Check for admin session in localStorage
     const adminSession = localStorage.getItem("adminSession");
     if (adminSession) {
       try {
@@ -35,11 +34,19 @@ export function AuthProvider({ children }) {
       const token = await u.getIdToken();
       const res = await fetch("/api/auth/sync", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ idToken: token }),
       });
 
-      const data = await res.json();
-      setMongoUser(data.user);
+      if (res.ok) {
+        const data = await res.json();
+        setMongoUser(data.user);
+      } else {
+        console.log("Auth sync failed:", res.status);
+        setMongoUser(null);
+      }
       setLoading(false);
     });
     return () => unsub();
@@ -51,10 +58,18 @@ export function AuthProvider({ children }) {
       const token = await user.getIdToken();
       const res = await fetch("/api/auth/sync", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ idToken: token }),
       });
-      const data = await res.json();
-      setMongoUser(data.user);
+      
+      if (res.ok) {
+        const data = await res.json();
+        setMongoUser(data.user);
+      } else {
+        console.error("refreshMongoUser failed:", res.status);
+      }
     } catch (err) {
       console.error("refreshMongoUser error", err);
     }

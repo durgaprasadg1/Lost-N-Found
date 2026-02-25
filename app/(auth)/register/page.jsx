@@ -29,7 +29,6 @@ export default function SignupPage() {
       return;
     }
 
-    // Check if user is logged in
     if (user && mongoUser) {
       router.replace("/user/" + mongoUser._id);
     }
@@ -54,7 +53,9 @@ export default function SignupPage() {
       toast.success("Account created successfully");
       router.push("/");
     } catch (err) {
-      toast.error(err?.message || "Signup failed");
+      toast.error( "Signup failed");
+      console.error("Signup error", err);
+
     } finally {
       setLoading(false);
     }

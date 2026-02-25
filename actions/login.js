@@ -46,8 +46,8 @@ export async function login(email, password) {
     return data;
   } catch (err) {
     const errorMessage = getAuthErrorMessage(err);
-    toast.error(errorMessage || "Login failed");
+    toast.error( "Login failed");
     console.log("Signin error", errorMessage);
-    throw err;
+    return;
   }
 }

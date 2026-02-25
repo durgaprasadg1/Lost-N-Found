@@ -22,7 +22,7 @@ export async function signup(email, password) {
       try {
         await signOut(auth);
       } catch {}
-      toast.error(data?.error || "Signup failed");
+      toast.error("Signup failed");
       console.log(data?.error || "Signup failed");
     }
 
@@ -30,7 +30,8 @@ export async function signup(email, password) {
     return data;
   } catch (err) {
     const errorMessage = getAuthErrorMessage(err);
-    toast.error(errorMessage);
-    throw err;
+    console.log(errorMessage)
+    toast.error("Something went wrong. Try again later.");
+    return;
   }
 }

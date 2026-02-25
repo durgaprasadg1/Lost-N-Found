@@ -22,6 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/actions/logout";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -133,7 +134,7 @@ export default function Navbar() {
 
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-semibold text-xl">
-          {"<LnF>"}
+          <Image src="/Log.png" width={60} height={40} alt="Logo" />
         </Link>
 
         <div className="hidden md:flex flex-1 justify-center gap-8 font-medium text-gray-700">

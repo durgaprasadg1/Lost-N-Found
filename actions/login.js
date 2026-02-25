@@ -42,7 +42,6 @@ export async function login(email, password) {
     }
 
     toast.success("Logged in successfully");
-    // Redirect to home page for regular users
     window.location.href = "/";
     return data;
   } catch (err) {

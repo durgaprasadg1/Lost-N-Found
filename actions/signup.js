@@ -10,6 +10,9 @@ export async function signup(email, password) {
 
     const res = await fetch("/api/auth/sync", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ idToken: token, create: true }),
     });
 

@@ -13,6 +13,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/actions/logout";
+import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -33,7 +34,7 @@ export default function Navbar() {
     <nav className="w-full bg-gray-100 shadow-md">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="font-bold text-xl">
-          &lt;LnF&gt;
+          <Image src="/Log.png" width={60} height={40} alt="Logo" />
         </Link>
 
         <div className="hidden md:flex items-center gap-6">

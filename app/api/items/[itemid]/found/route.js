@@ -44,12 +44,10 @@ export async function PATCH(req, { params }) {
       );
     }
 
-    // Check and reset daily limit if needed
     if (shouldResetDailyLimit(founder)) {
       await resetDailyLimit(founder);
     }
 
-    // Check if user can mark an item as found
     const canMark = canMarkItemAsFound(founder);
     if (!canMark.allowed) {
       return NextResponse.json({ error: canMark.message }, { status: 429 });

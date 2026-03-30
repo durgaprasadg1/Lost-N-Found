@@ -1,4 +1,4 @@
-#  Lost & Found Platform For VIT Pune
+# Lost & Found Platform For VIT Pune
 
 <div align="center">
 
@@ -18,7 +18,7 @@
 
 ---
 
-##  Table of Contents
+## Table of Contents
 
 - [About](#-about)
 - [Features](#-features)
@@ -35,64 +35,64 @@
 
 ---
 
-##  About
+## About
 
 Lost & Found is a full-stack web application designed to help communities connect lost items with their owners. Users can post about lost items, browse found items, and contact each other to recover belongings. Administrators have access to a comprehensive dashboard for managing users, verifying requests, and viewing platform statistics.
 
 ---
 
-##  Features
+## Features
 
-###  User Features
+### User Features
 
--  **Authentication**
+- **Authentication**
 
-  - Email/Password registration and login
-  - Google OAuth integration
-  - Secure session management with Firebase
+- Email/Password registration and login
+- Google OAuth integration
+- Secure session management with Firebase
 
--  **Item Posting**
+- **Item Posting**
 
-  - Create lost item announcements
-  - Post found items
-  - Add descriptions and images (with Cloudinary integration)
-  - Real-time image compression for optimal performance
+- Create lost item announcements
+- Post found items
+- Add descriptions and images (with Cloudinary integration)
+- Real-time image compression for optimal performance
 
--  **Discovery**
+- **Discovery**
 
-  - Browse all lost and found items
-  - View top performers in the community
-  - Search and filter functionality
-  - User profiles with achievement badges
+- Browse all lost and found items
+- View top performers in the community
+- Search and filter functionality
+- User profiles with achievement badges
 
--  **User Dashboard**
-  - View posted announcements and requests
-  - Track item status
-  - View personal achievements and statistics
-  - Edit profile information
+- **User Dashboard**
+- View posted announcements and requests
+- Track item status
+- View personal achievements and statistics
+- Edit profile information
 
-###  Admin Features
+### Admin Features
 
--  **Comprehensive Dashboard**
+- **Comprehensive Dashboard**
 
-  - Real-time platform statistics
-  - User management and verification
-  - Unverified request queue
-  - Analytics with charts and visualizations
+- Real-time platform statistics
+- User management and verification
+- Unverified request queue
+- Analytics with charts and visualizations
 
--  **User Management**
+- **User Management**
 
-  - View all registered users
-  - Verify user accounts
-  - Manage user permissions
-  - Account status tracking
+- View all registered users
+- Verify user accounts
+- Manage user permissions
+- Account status tracking
 
--  **Request Verification**
-  - Review pending lost/found requests
-  - Approve or reject submissions
-  - Prevent spam and inappropriate content
+- **Request Verification**
+- Review pending lost/found requests
+- Approve or reject submissions
+- Prevent spam and inappropriate content
 
-###  Security
+### Security
 
 - Separate authentication systems for users and admins
 - Admin creation secret key protection
@@ -134,7 +134,7 @@ Lost & Found is a full-stack web application designed to help communities connec
 
 ---
 
-##  Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -152,7 +152,7 @@ Before you begin, ensure you have the following installed:
 
 ---
 
-##  Installation
+## Installation
 
 ### 1. Clone the Repository
 
@@ -187,7 +187,7 @@ touch .env.local
 
 ---
 
-##  Environment Configuration
+## Environment Configuration
 
 Create a `.env.local` file in the root directory with the following variables:
 
@@ -205,7 +205,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
 ### MongoDB Configuration
 
 ```env
-MONGODB_URI=:YOUR_MONGO_DB_CONNECTION_STRING
+MONGODB_URI=your_mongodb_connection_string
+MONGODB_URI_LOCAL=mongodb://127.0.0.1:27017/lnf
 ```
 
 ### Firebase Admin Configuration
@@ -240,7 +241,7 @@ EMAIL_PASSWORD=your_app_password
 
 ---
 
-##  Usage
+## Usage
 
 ### Development Server
 
@@ -270,8 +271,6 @@ Check for code issues:
 ```bash
 npm run lint
 ```
-
-
 
 #### Create an Admin Account
 
@@ -303,7 +302,7 @@ npm run lint
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 lnf/
@@ -365,7 +364,7 @@ lnf/
 
 ---
 
-##  API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
@@ -402,20 +401,21 @@ lnf/
 
 ---
 
-##  Environment Variables Reference
+## Environment Variables Reference
 
-| Variable                       | Description                   | Required |
-| ------------------------------ | ----------------------------- | -------- |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API Key              | ✅       |
-| `MONGODB_URI`                  | MongoDB connection string     | ✅       |
-| `CLOUDINARY_CLOUD_NAME`        | Cloudinary cloud name         | ✅       |
-| `ADMIN_CREATION_SECRET`        | Secret for admin registration | ✅       |
-| `EMAIL_USER`                   | Email for notifications       | ❌       |
-| `EMAIL_PASSWORD`               | Email app password            | ❌       |
+| Variable                       | Description                                        | Required |
+| ------------------------------ | -------------------------------------------------- | -------- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase API Key                                   | ✅       |
+| `MONGODB_URI`                  | MongoDB connection string                          | ✅       |
+| `MONGODB_URI_LOCAL`            | Optional development-only URI (falls back locally) | ❌       |
+| `CLOUDINARY_CLOUD_NAME`        | Cloudinary cloud name                              | ✅       |
+| `ADMIN_CREATION_SECRET`        | Secret for admin registration                      | ✅       |
+| `EMAIL_USER`                   | Email for notifications                            | ❌       |
+| `EMAIL_PASSWORD`               | Email app password                                 | ❌       |
 
 ---
 
-##  Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -454,7 +454,7 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-##  Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -484,7 +484,7 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-##  Documentation
+## Documentation
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Firebase Documentation](https://firebase.google.com/docs)
@@ -494,14 +494,11 @@ We welcome contributions! Please follow these steps:
 
 ---
 
-
-
-##  License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
 
 ## Acknowledgments
 

@@ -74,8 +74,9 @@ export async function PATCH(req, { params }) {
           ownerUser.email
         } | Time: ${new Date().toLocaleString()}`;
 
-        finder.notification.push(notificationMessage);
-        await finder.save();
+        await User.findByIdAndUpdate(finder._id, {
+          notification: [...(finder.notification || []), notificationMessage],
+        });
 
         if (item.creditGiven) {
           try {
@@ -125,11 +126,15 @@ VIT Lost & Found Team`,
       });
     }
 
-    item.isFound = false;
-    item.foundBy = null;
-    await item.save();
+    await Item.findByIdAndUpdate(itemid, {
+      isFound: false,
+      foundBy: null,
+      creditGiven: item.creditGiven,
+    });
 
-    return NextResponse.json({ success: true, item }, { status: 200 });
+    const updatedItem = await Item.findById(itemid);
+
+    return NextResponse.json({ success: true, item: updatedItem }, { status: 200 });
   } catch (err) {
     console.error("/api/items/[itemid]/not-got-item error:", err);
     return NextResponse.json(

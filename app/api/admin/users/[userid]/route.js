@@ -50,7 +50,7 @@ export async function PATCH(req, { params }) {
           html: `
     <div style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#333;">
       
-      <h2 style="color:#b91c1c;">⚠️ Account Usage Warning</h2>
+      <h2 style="color:#b91c1c;">?? Account Usage Warning</h2>
 
       <p>Dear User,</p>
 
@@ -67,7 +67,7 @@ export async function PATCH(req, { params }) {
         <li>Submitting lost or found requests without valid item images</li>
         <li>Posting multiple or repetitive requests without meaningful details</li>
         <li>Providing misleading or incomplete information</li>
-        <li>Any activity that disrupts the platform’s intended purpose</li>
+        <li>Any activity that disrupts the platform�s intended purpose</li>
       </ul>
 
       <p style="margin-top:12px;">
@@ -99,10 +99,12 @@ export async function PATCH(req, { params }) {
   `,
         });
 
-        user.notification.push(
-          `⚠️ Admin Warning: Please follow platform rules.`
-        );
-        await user.save();
+        await User.findByIdAndUpdate(user._id, {
+          notification: [
+            ...(user.notification || []),
+            `?? Admin Warning: Please follow platform rules.`,
+          ],
+        });
       } catch (mailErr) {
         console.error("Failed to send warning email:", mailErr);
       }
@@ -115,16 +117,16 @@ export async function PATCH(req, { params }) {
 
     if (action === "block") {
       try {
-      const recipientEmail = user.email;
-        if(!user.isBlocked){
-        await transporter.sendMail({
-          from: `"Lost & Found Support" <support@lostandfound.com>`,
-          to: recipientEmail,
-          subject: "Your Account Has Been Blocked",
-          html: `
+        const recipientEmail = user.email;
+        if (!user.isBlocked) {
+          await transporter.sendMail({
+            from: `"Lost & Found Support" <support@lostandfound.com>`,
+            to: recipientEmail,
+            subject: "Your Account Has Been Blocked",
+            html: `
     <div style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#333;">
       
-      <h2 style="color:#b91c1c;">🚫 Account Access Restricted</h2>
+      <h2 style="color:#b91c1c;">?? Account Access Restricted</h2>
 
       <p>Dear User,</p>
 
@@ -172,16 +174,16 @@ export async function PATCH(req, { params }) {
       </p>
     </div>
   `,
-        });
-      }else{
-        await transporter.sendMail({
-  from: `"Lost & Found Support" <support@lostandfound.com>`,
-  to: recipientEmail,
-  subject: "Your Account Has Been Unblocked",
-  html: `
+          });
+        } else {
+          await transporter.sendMail({
+            from: `"Lost & Found Support" <support@lostandfound.com>`,
+            to: recipientEmail,
+            subject: "Your Account Has Been Unblocked",
+            html: `
     <div style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#333;">
       
-      <h2 style="color:#166534;">✅ Account Access Restored</h2>
+      <h2 style="color:#166534;">? Account Access Restored</h2>
 
       <p>Dear User,</p>
 
@@ -219,12 +221,10 @@ export async function PATCH(req, { params }) {
       </p>
     </div>
   `,
-});
+          });
+        }
 
-      }
-
-        user.isBlocked = !user.isBlocked;
-        await user.save();
+        await User.findByIdAndUpdate(user._id, { isBlocked: !user.isBlocked });
       } catch (mailErr) {
         console.error("Failed to send blocking email:", mailErr);
       }
@@ -267,16 +267,17 @@ export async function DELETE(req, { params }) {
 
       const user = await User.findByIdAndDelete(userid);
       console.log("user : ", user);
-      const recipientEmail = user.email;
+      const recipientEmail = user?.email;
 
-      await transporter.sendMail({
-        from: `"Lost & Found Support" <support@lostandfound.com>`,
-        to: recipientEmail,
-       subject: "Account Permanently Deleted Due to Policy Violations",
-  html: `
+      if (recipientEmail) {
+        await transporter.sendMail({
+          from: `"Lost & Found Support" <support@lostandfound.com>`,
+          to: recipientEmail,
+          subject: "Account Permanently Deleted Due to Policy Violations",
+          html: `
     <div style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#333;">
       
-      <h2 style="color:#991b1b;">❌ Account Permanently Deleted</h2>
+      <h2 style="color:#991b1b;">? Account Permanently Deleted</h2>
 
       <p>Dear User,</p>
 
@@ -325,8 +326,8 @@ export async function DELETE(req, { params }) {
       </p>
     </div>
   `,
-      });
-      
+        });
+      }
     } catch (mailErr) {
       console.error("Failed to send deleting email:", mailErr);
     }

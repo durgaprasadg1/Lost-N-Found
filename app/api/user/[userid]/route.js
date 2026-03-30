@@ -43,11 +43,13 @@ export async function PATCH(req, { params }) {
       "Other",
     ];
 
+    const updates = {};
+
     if ("name" in body) {
       if (!body.name || !nameRegex.test(body.name)) {
         return NextResponse.json({ error: "Invalid name" }, { status: 400 });
       }
-      user.name = body.name;
+      updates.name = body.name;
     }
 
     if ("phone" in body) {
@@ -57,7 +59,7 @@ export async function PATCH(req, { params }) {
           { status: 400 }
         );
       }
-      user.phone = body.phone || "";
+      updates.phone = body.phone || "";
     }
 
     if ("department" in body) {
@@ -67,7 +69,7 @@ export async function PATCH(req, { params }) {
           { status: 400 }
         );
       }
-      user.department = body.department || "";
+      updates.department = body.department || "";
     }
 
     if ("bio" in body) {
@@ -77,7 +79,7 @@ export async function PATCH(req, { params }) {
           { status: 400 }
         );
       }
-      user.bio = body.bio || "";
+      updates.bio = body.bio || "";
     }
 
     if ("notification" in body) {
@@ -87,10 +89,10 @@ export async function PATCH(req, { params }) {
           { status: 400 }
         );
       }
-      user.notification = body.notification;
+      updates.notification = body.notification;
     }
 
-    await user.save();
+    await User.findByIdAndUpdate(userid, updates);
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

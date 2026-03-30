@@ -54,29 +54,34 @@ export async function PATCH(req, { params }) {
       }" was confirmed received by ${ownerUser.name}. Email: ${
         ownerUser.email
       } | Time: ${new Date().toLocaleString()}`;
-      finder.notification.push(msgToFinder);
-      await finder.save();
 
-      // Credit the finder if they haven't been credited yet
-      try {
-        if (!item.creditGiven) {
+      await User.findByIdAndUpdate(finder._id, {
+        notification: [...(finder.notification || []), msgToFinder],
+      });
+
+      if (!item.creditGiven) {
+        try {
           await User.findByIdAndUpdate(finder._id, {
             $inc: { itemsReturned: 1 },
           });
           item.creditGiven = true;
+        } catch (err) {
+          console.error("Error crediting finder on resolved route:", err);
         }
-      } catch (err) {
-        console.error("Error crediting finder on resolved route:", err);
       }
     }
 
     await User.findByIdAndUpdate(owner._id, { $inc: { totalLostRequests: 1 } });
 
-    item.isResolved = true;
-    item.resolvedAt = new Date();
-    await item.save();
+    await Item.findByIdAndUpdate(itemid, {
+      isResolved: true,
+      resolvedAt: new Date(),
+      creditGiven: item.creditGiven,
+    });
 
-    return NextResponse.json({ success: true, owner, item }, { status: 200 });
+    const updatedItem = await Item.findById(itemid);
+
+    return NextResponse.json({ success: true, owner, item: updatedItem }, { status: 200 });
   } catch {
     return NextResponse.json(
       { success: false, error: "Internal Server Error" },

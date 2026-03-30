@@ -22,17 +22,18 @@ export async function POST(req) {
     const email = decoded.email;
     const name = decoded.name || email.split("@")[0];
 
-  const existingAdmin = await Admin.findOne({ email });
-  if (existingAdmin) {
-    return NextResponse.json(
-      { error: "This email is registered as admin. Please use admin login." },
-      { status: 403 }
-    );
-  }
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return NextResponse.json(
+        { error: "This email is registered as admin. Please use admin login." },
+        { status: 403 }
+      );
+    }
 
     let user = await User.findOne({ email });
     if (!user) {
       if (create) {
+        const now = new Date();
         user = await User.create({
           name,
           email,
@@ -41,6 +42,15 @@ export async function POST(req) {
           department: "Other",
           items: [],
           itemsReturned: 0,
+          totalLostRequests: 0,
+          monthlyLostRequestsCount: 0,
+          monthlyFoundAnnouncementsCount: 0,
+          lastMonthlyReset: now,
+          dailyMarkFoundCount: 0,
+          lastDailyReset: now,
+          notification: [],
+          isBlocked: false,
+          isUser: true,
           token: decoded.user_id,
           profilePicture: {
             url: decoded.picture || "",

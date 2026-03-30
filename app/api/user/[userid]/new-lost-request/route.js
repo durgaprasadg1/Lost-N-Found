@@ -39,12 +39,10 @@ export async function POST(req, { params }) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Check and reset monthly limits if needed
     if (shouldResetMonthlyLimits(mongoUser)) {
       await resetMonthlyLimits(mongoUser);
     }
 
-    // Check if user can post a lost request
     const canPost = canPostLostRequest(mongoUser);
     if (!canPost.allowed) {
       return NextResponse.json({ error: canPost.message }, { status: 429 });
@@ -98,6 +96,10 @@ export async function POST(req, { params }) {
       lostAt: body.lostAt,
       category: body.category,
       isLost: true,
+      isFound: false,
+      isResolved: false,
+      isVerified: false,
+      creditGiven: false,
       postedBy: mongoUser._id,
       itemImage: imageData,
       reportedAt: new Date(),

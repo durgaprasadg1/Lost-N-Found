@@ -71,19 +71,29 @@ export async function PATCH(req, { params }) {
     }" has been found by ${founder.name}. Email: ${founder.email} | Phone: ${
       founder.phone
     } | Time: ${new Date().toLocaleString()}`;
-    owner.notification.push(notificationMessage);
-    await owner.save();
 
-    item.isFound = true;
-    item.foundBy = founder._id;
-    item.foundAt = new Date().toLocaleString();
+    const updatedOwner = await User.findByIdAndUpdate(
+      owner._id,
+      {
+        notification: [...(owner.notification || []), notificationMessage],
+      },
+      { new: true }
+    );
 
-    if (!item.creditGiven) {
+    let creditGiven = item.creditGiven;
+    if (!creditGiven) {
       await User.findByIdAndUpdate(founder._id, {
         $inc: { itemsReturned: 1, dailyMarkFoundCount: 1 },
       });
-      item.creditGiven = true;
+      creditGiven = true;
     }
+
+    await Item.findByIdAndUpdate(itemid, {
+      isFound: true,
+      foundBy: founder._id,
+      foundAt: new Date().toLocaleString(),
+      creditGiven,
+    });
 
     if (owner.email) {
       const mailOptions = {
@@ -114,9 +124,12 @@ VIT Lost & Found Team`,
       }
     }
 
-    await item.save();
+    const updatedItem = await Item.findById(itemid);
 
-    return NextResponse.json({ success: true, owner, item }, { status: 200 });
+    return NextResponse.json(
+      { success: true, owner: updatedOwner, item: updatedItem },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("/api/items/[itemid]/found error:", err);
     return NextResponse.json(

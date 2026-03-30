@@ -1,29 +1,6 @@
-import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import { FirestoreModel } from "@/lib/firestoreModel";
 
-const adminSchema = new Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      minlength: 2,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-    },
-  },
-  { timestamps: true }
-);
+class Admin extends FirestoreModel {}
+Admin.collectionName = "admins";
 
-export default mongoose.models.Admin || mongoose.model("Admin", adminSchema);
+export default Admin;

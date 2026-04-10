@@ -2,6 +2,8 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user";
 import Item from "@/model/item";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { cacheKeys, CACHE_TTL } from "@/lib/cacheKeys";
+import { getJsonCache, setJsonCache } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
@@ -43,6 +45,12 @@ export async function GET(req, { params }) {
       );
     }
 
+    const cacheKey = cacheKeys.userFoundAnnouncements(userid);
+    const cached = await getJsonCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const items = await Item.find({
       postedBy: userid,
       isFound: true,
@@ -50,7 +58,10 @@ export async function GET(req, { params }) {
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ success: true, items });
+    const payload = { success: true, items };
+    await setJsonCache(cacheKey, payload, CACHE_TTL.USER_FOUND_ANNOUNCEMENTS);
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("GET USER FOUND ITEMS ERROR:", error);
 

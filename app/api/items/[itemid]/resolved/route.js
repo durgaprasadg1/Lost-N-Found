@@ -2,6 +2,11 @@ import dbConnect from "@/lib/dbConnect";
 import Item from "@/model/item";
 import User from "@/model/user";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import {
+  getGlobalFeedCacheKeys,
+  getUserScopedCacheKeys,
+} from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req, { params }) {
@@ -80,6 +85,13 @@ export async function PATCH(req, { params }) {
     });
 
     const updatedItem = await Item.findById(itemid);
+    await deleteCacheKeys([
+      ...getGlobalFeedCacheKeys(),
+      ...getUserScopedCacheKeys({ userId: owner._id, email: owner.email }),
+      ...(finder
+        ? getUserScopedCacheKeys({ userId: finder._id, email: finder.email })
+        : []),
+    ]);
 
     return NextResponse.json({ success: true, owner, item: updatedItem }, { status: 200 });
   } catch {

@@ -2,25 +2,25 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user";
 import Admin from "@/model/admin";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { cacheKeys, CACHE_TTL } from "@/lib/cacheKeys";
+import { getJsonCache, setJsonCache } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  try {
-    await dbConnect();
-  } catch (error) {
-    console.log("Database connection failed:", error.message);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again later." },
-      { status: 500 }
-    );
-  }
-
   try {
     const { idToken, create } = await req.json();
 
     const decoded = await adminAuth.verifyIdToken(idToken);
     const email = decoded.email;
     const name = decoded.name || email.split("@")[0];
+    const cacheKey = cacheKeys.userProfile(email);
+
+    const cachedUser = await getJsonCache(cacheKey);
+    if (cachedUser) {
+      return NextResponse.json({ user: cachedUser });
+    }
+
+    await dbConnect();
 
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
@@ -64,6 +64,8 @@ export async function POST(req) {
         );
       }
     }
+
+    await setJsonCache(cacheKey, user, CACHE_TTL.USER_PROFILE);
 
     return NextResponse.json({ user });
   } catch (error) {

@@ -4,6 +4,8 @@ import Item from "@/model/item";
 import { NextResponse } from "next/server";
 import { deleteImages } from "@/lib/cloudinary";
 import { userActionSchema } from "@/lib/validationSchemas";
+import { getGlobalFeedCacheKeys, getUserScopedCacheKeys } from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -220,6 +222,11 @@ export async function PATCH(req, { params }) {
         console.error("Failed to send blocking email:", mailErr);
       }
 
+      await deleteCacheKeys([
+        ...getUserScopedCacheKeys({ userId: user._id, email: user.email }),
+        ...getGlobalFeedCacheKeys(),
+      ]);
+
       return NextResponse.json({
         success: true,
         message: "User blocked successfully",
@@ -317,6 +324,11 @@ export async function DELETE(req, { params }) {
   `,
         });
       }
+
+      await deleteCacheKeys([
+        ...getUserScopedCacheKeys({ userId: userid, email: recipientEmail }),
+        ...getGlobalFeedCacheKeys(),
+      ]);
     } catch (mailErr) {
       console.error("Failed to send deleting email:", mailErr);
     }

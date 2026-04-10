@@ -1,9 +1,17 @@
 import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user";
+import { cacheKeys, CACHE_TTL } from "@/lib/cacheKeys";
+import { getJsonCache, setJsonCache } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const cacheKey = cacheKeys.topPerformers();
+    const cached = await getJsonCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     await dbConnect();
 
     const users = await User.find()
@@ -22,7 +30,10 @@ export async function GET() {
       itemsReturned: u.itemsReturned || 0,
     }));
 
-    return NextResponse.json({ success: true, performers });
+    const payload = { success: true, performers };
+    await setJsonCache(cacheKey, payload, CACHE_TTL.TOP_PERFORMERS);
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("GET PERFORMERS ERROR:", error);
 

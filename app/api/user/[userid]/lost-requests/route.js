@@ -2,6 +2,8 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user";
 import Item from "@/model/item";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { cacheKeys, CACHE_TTL } from "@/lib/cacheKeys";
+import { getJsonCache, setJsonCache } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
@@ -31,11 +33,20 @@ export async function GET(req, { params }) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const cacheKey = cacheKeys.userLostRequests(userid);
+    const cached = await getJsonCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const items = await Item.find({ postedBy: userid, isLost: true })
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ success: true, items });
+    const payload = { success: true, items };
+    await setJsonCache(cacheKey, payload, CACHE_TTL.USER_LOST_REQUESTS);
+
+    return NextResponse.json(payload);
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Internal Server Error" },

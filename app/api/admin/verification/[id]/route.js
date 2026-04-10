@@ -3,6 +3,8 @@ import Item from "@/model/item";
 import { NextResponse } from "next/server";
 import { deleteImage } from "@/lib/cloudinary";
 import User from "@/model/user";
+import { getGlobalFeedCacheKeys, getUserScopedCacheKeys } from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -93,6 +95,11 @@ export async function DELETE(req, { params }) {
     }
 
     await Item.findByIdAndDelete(id);
+
+    await deleteCacheKeys([
+      ...getGlobalFeedCacheKeys(),
+      ...getUserScopedCacheKeys({ userId: userid, email: user?.email }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

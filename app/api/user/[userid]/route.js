@@ -2,6 +2,8 @@ import dbConnect from "@/lib/dbConnect";
 import User from "@/model/user";
 import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import { cacheKeys } from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 
 export async function PATCH(req, { params }) {
   try {
@@ -93,6 +95,10 @@ export async function PATCH(req, { params }) {
     }
 
     await User.findByIdAndUpdate(userid, updates);
+    await deleteCacheKeys([
+      cacheKeys.userProfile(user.email),
+      cacheKeys.topPerformers(),
+    ]);
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

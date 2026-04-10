@@ -2,6 +2,11 @@ import dbConnect from "@/lib/dbConnect";
 import Item from "@/model/item";
 import User from "@/model/user";
 import { adminAuth } from "@/lib/firebaseAdmin";
+import {
+  getGlobalFeedCacheKeys,
+  getUserScopedCacheKeys,
+} from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
@@ -133,6 +138,15 @@ VIT Lost & Found Team`,
     });
 
     const updatedItem = await Item.findById(itemid);
+    const finder = item.foundBy ? await User.findById(item.foundBy) : null;
+
+    await deleteCacheKeys([
+      ...getGlobalFeedCacheKeys(),
+      ...getUserScopedCacheKeys({ userId: owner._id, email: owner.email }),
+      ...(finder
+        ? getUserScopedCacheKeys({ userId: finder._id, email: finder.email })
+        : []),
+    ]);
 
     return NextResponse.json({ success: true, item: updatedItem }, { status: 200 });
   } catch (err) {

@@ -2,6 +2,8 @@ import dbConnect from "@/lib/dbConnect";
 import Item from "@/model/item";
 import { NextResponse } from "next/server";
 import User from "@/model/user";
+import { getGlobalFeedCacheKeys, getUserScopedCacheKeys } from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -79,6 +81,11 @@ export async function PATCH(req, { params }) {
     </div>
   `,
     });
+
+    await deleteCacheKeys([
+      ...getGlobalFeedCacheKeys(),
+      ...getUserScopedCacheKeys({ userId: userid, email: user?.email }),
+    ]);
 
     return NextResponse.json({ success: true, item: updatedItem });
   } catch (error) {

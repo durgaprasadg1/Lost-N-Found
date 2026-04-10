@@ -5,6 +5,8 @@ import cloudinary from "@/lib/cloudinary";
 import { adminAuth } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
 import { lostItemSchema } from "@/lib/validationSchemas";
+import { cacheKeys } from "@/lib/cacheKeys";
+import { deleteCacheKeys } from "@/lib/redis";
 import {
   shouldResetMonthlyLimits,
   resetMonthlyLimits,
@@ -109,6 +111,12 @@ export async function POST(req, { params }) {
       $inc: { totalLostRequests: 1, monthlyLostRequestsCount: 1 },
       phone: body.phone,
     });
+
+    await deleteCacheKeys([
+      cacheKeys.allLostItems(),
+      cacheKeys.userLostRequests(userid),
+      cacheKeys.userProfile(mongoUser.email),
+    ]);
 
     return NextResponse.json({ success: true, item: newItem });
   } catch (error) {

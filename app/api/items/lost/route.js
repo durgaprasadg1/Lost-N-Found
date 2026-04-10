@@ -1,9 +1,17 @@
 import Item from "@/model/item";
 import dbConnect from "@/lib/dbConnect";
+import { cacheKeys, CACHE_TTL } from "@/lib/cacheKeys";
+import { getJsonCache, setJsonCache } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const cacheKey = cacheKeys.allLostItems();
+    const cached = await getJsonCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     await dbConnect();
 
     const items = await Item
@@ -11,7 +19,9 @@ export async function GET() {
       .sort({ reportedAt: -1 })
       .populate("postedBy");
 
-    return NextResponse.json({ success: true, items });
+    const payload = { success: true, items };
+    await setJsonCache(cacheKey, payload, CACHE_TTL.ALL_LOST_ITEMS);
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("GET LOST ITEMS ERROR:", error);
 
